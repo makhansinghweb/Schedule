@@ -1,47 +1,18 @@
-import os, requests, pandas as pd, yfinance as yf
-
-TOKEN = os.environ8310777518:AAGpPrgKdhew8GsV64igXJhy6vm3cBqetFU
-CHAT = os.environ1136740800
-
-# Yahan jitne chaho symbols daalo (Yahoo Finance wale naam)
-SYMBOLS = ["BTC-USD", "ETH-USD", "SOL-USD", "^NSEI", "^NSEBANK",
-           "RELIANCE.NS", "TCS.NS", "EURUSD=X", "GC=F"]
-
-# timeframe : candle ke minutes
-TIMEFRAMES = {"15m": 15, "30m": 30, "1h": 60}
-
-FAST, SLOW = 9, 21
-WINDOW = 20  # sirf pichle 20 minute mein bani crossover bhejo (duplicate rokne ke liye)
-
-def send(msg):
-    requests.post(f"https://api.telegram.org/bot{TOKEN}/sendMessage",
-                  data={"chat_id": CHAT, "text": msg})
-
-for tf, mins in TIMEFRAMES.items():
-    data = yf.download(SYMBOLS, period="5d", interval=tf, group_by="ticker",
-                       progress=False, auto_adjust=True, threads=True)
-    for s in SYMBOLS:
-        try:
-            close = data[s]["Close"].dropna()
-        except Exception:
-            continue
-        if len(close) < SLOW + 3:
-            continue
-
-        fast = close.ewm(span=FAST, adjust=False).mean()
-        slow = close.ewm(span=SLOW, adjust=False).mean()
-
-        # last band ho chuki candle = -2
-        prev = fast.iloc[-3] - slow.iloc[-3]
-        curr = fast.iloc[-2] - slow.iloc[-2]
-
-        closed_at = close.index[-2] + pd.Timedelta(minutes=mins)
-        age = pd.Timestamp.now(tz=closed_at.tz) - closed_at
-        if age > pd.Timedelta(minutes=WINDOW):
-            continue
-
-        price = close.iloc[-2]
-        if prev <= 0 < curr:
-            send(f"🟢 {s} [{tf}]: EMA9 ne EMA21 ko upar cross kiya (Bullish)\nPrice: {price:.2f}")
-        elif prev >= 0 > curr:
-            send(f"🔴 {s} [{tf}]: EMA9 ne EMA21 ko neeche cross kiya (Bearish)\nPrice: {price:.2f}")
+name: EMA Alert
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install yfinance pandas requests
+      - run: python ema_alert.py
+        env:
+          BOT_TOKEN: ${{ 8310777518:AAGpPrgKdhew8GsV64igXJhy6vm3cBqetFU }}
+          CHAT_ID: ${{ 1136740800 }}
