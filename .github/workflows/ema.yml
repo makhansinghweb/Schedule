@@ -1,7 +1,7 @@
 import os, requests, pandas as pd, yfinance as yf
 
-TOKEN = os.environ["BOT_TOKEN"]
-CHAT = os.environ["CHAT_ID"]
+TOKEN = os.environ8310777518:AAGpPrgKdhew8GsV64igXJhy6vm3cBqetFU
+CHAT = os.environ1136740800
 
 # Yahan jitne chaho symbols daalo (Yahoo Finance wale naam)
 SYMBOLS = ["BTC-USD", "ETH-USD", "SOL-USD", "^NSEI", "^NSEBANK",
